@@ -1,0 +1,20 @@
+TODO Items
+===============================================================================
+ - Support any IO like object.
+ - Support for buffer objects.
+ - Use python malloc/free instead of the libc ones.
+ - Create a wx.MNGAnimationCtrl (based on the GIF one found in tpclient-pywx).
+ - Use the find function so works under linux/windows.
+ - Add compiled .dll for use under windows.
+ - Add distutils support.
+ - Add support for "chunk" mode operation (IE from a non-blocking socket).
+ - Add support for pygame Ctypes as well as Cpygame.
+ - Detect libmng version.
+ - Add support for "dirty rect" updating.
+ - Add support for creating 
+
+Long Term Items
+===============================================================================
+ - Support for writing out MNG files.
+ - Support for chunk iteration.
+
