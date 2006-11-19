@@ -243,9 +243,18 @@ try:
 		"""\
 		Displays a MNG on a SDL (pygame) surface
 		"""
-		def __init__(self, file):
+		def __init__(self, file, surface=None):
 			# Figure out the best fileformat for the library to output
-			info = pygame.display.Info()
+			if surface is None:
+				info = pygame.display.Info()
+			else:
+				class info:
+					pass
+				info = info()
+				info.bitsize = surface.get_bitsize()
+				info.masks = surface.get_masks()
+				info.shifts = surface.get_shifts()
+
 			print info.bitsize, info.masks, info.shifts	
 			if info.bitsize == 32:
 				if info.masks[ALPHA] == 0:
@@ -293,7 +302,7 @@ try:
 				if info.shifts[BLUE] == 0:
 					# Blue first
 					format = MNG_CANVAS_BGR565
-					sdlformat = "BGR"
+					sdlformat = "RGB"
 				else:
 					# Red first
 					format = MNG_CANVAS_RGB565
@@ -301,29 +310,29 @@ try:
 			else:
 				raise RuntimeError("Unable to figure out the best format for this video file.")
 
+			print "Detected image format to be", NAMESPERPIXEL[format], sdlformat
 			self.sdlformat = sdlformat
 			MNG.__init__(self, file, format)
 		
-		def processheader(self, width, height):
-			print "SDL processheader", self, self.sdlformat
-
-			self.initalized = True
-
-			# Create a buffer which the library will output to
-			self.buffer_size = width*height*self.bitsperpixel/8
-			self.image	 	 = pygame.surface.Surface((width, height), pygame.SRCALPHA)
+#		def processheader(self, width, height):
+#			print "SDL processheader", self, self.sdlformat
+#			self.initalized = True
+#			# Create a buffer which the library will output to
+#			self.buffer_size = width*height*self.bitsperpixel/8
+#			self.image	 	 = pygame.surface.Surface((width, height), pygame.SRCALPHA)
 
 		def nextframe(self):
-			# Lock the surface
-			self.image.lock()
-			print self.getticks(), self.delay
-			if self.getticks() > self.delay:
-				print "calling display_resume"
-				mng.mng_display_resume(self.mng_handle)
-			return self.delay, self.buffer
+#			# Lock the surface
+#			self.image.lock()
+#			print self.getticks(), self.delay
+#			if self.getticks() > self.delay:
+#				print "calling display_resume"
+#				mng.mng_display_resume(self.mng_handle)
+#			self.image.unlock()
+#			return d, self.image
+
 			d, buffer = MNG.nextframe(self)
-			self.image.unlock()
-			return d, self.image
+			return d, pygame.image.frombuffer(string_at(buffer, self.buffer_size), self.size, self.sdlformat)
 
 except ImportError:
 	pass
@@ -334,11 +343,11 @@ if __name__ == "__main__":
 	import sys
 	if len(sys.argv) > 1:
 		import pygame
-		window = pygame.display.set_mode((640, 480)) 
+		screen = pygame.display.set_mode((640, 480), 16, 16) 
 		pygame.display.set_caption('Battle Viewer') 
-		screen = pygame.display.get_surface() 
+		screen.fill((255,255,255))
 
-		a = pygameMNG(sys.argv[1])
+		a = pygameMNG(sys.argv[1], screen)
 		print "sigtype\t\t\t",			a.sigtype
 		print "type\t\t\t",				a.type
 		print "width\t\t\t",			a.width
