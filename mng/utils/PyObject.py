@@ -1,6 +1,6 @@
-#
-#
-#
+"""
+Extra functionality for accessing the C parts of Python objects.
+"""
 
 from ctypes import *
 

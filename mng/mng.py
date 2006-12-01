@@ -1,5 +1,6 @@
+"""\
 
-import time
+"""
 
 from ctypes import *
 libc = cdll.LoadLibrary("libc.so.6")
