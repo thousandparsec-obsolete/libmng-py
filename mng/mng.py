@@ -2,16 +2,31 @@
 
 """
 
+from ctypes.util import find_library
 from ctypes import *
-libc = cdll.LoadLibrary("libc.so.6")
+# 
+libc = cdll.LoadLibrary(find_library("c"))
 libc.calloc.restype = c_void_p
 libc.calloc.argtypes = [c_int, c_int]
 libc.fread.restype = c_uint32
 libc.fread.argtypes = [c_void_p, c_uint32, c_uint32, c_void_p]
+
 pythonapi.PyFile_AsFile.restype = c_void_p
 
 from constants import *
-mng = cdll.LoadLibrary("libmng.so.1.1.0.9")
+
+import sys
+if sys.platform == 'win32':
+	# Look in the dll directory
+	import os.path
+	lib = os.path.join(os.dirname(__file__), "dll", "libmng.dll")
+else:
+	lib = find_library("mng")
+
+if lib is None:
+	raise RuntimeError("Was not able to find a libmng library which I can use.")
+
+mng = cdll.LoadLibrary(lib)
 mng.mng_initialize.restype = c_void_p
 
 #mng_version_text = c_byte.in_dll(mng, "mng_version_text")
@@ -109,6 +124,8 @@ def py_mngrefresh(handle, x, y, w, h):
 	data.refresh((x,y), (w,h))
 	return MNG_TRUE
 mngrefresh=MNGREFRESH(py_mngrefresh)
+
+import time
 
 _marker = []
 class MNG:

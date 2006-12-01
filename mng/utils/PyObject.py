@@ -20,8 +20,6 @@ PyObject_HEAD_debug = [
 	('_typeobject', c_void_p)
 ]
 
-
-
 # Need to figure out if this is a debug build. 
 # We are going to do this by looking for ob_refcnt value to be correct.
 
