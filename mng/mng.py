@@ -227,12 +227,13 @@ class MNG:
 		Should create a buffer to store the image data in.
 		Should call mng.mng_set_canvasstyle(self.mng_handle, self.output)
 		"""
-		print "MNG processheader"
-		self.initalized = True
-
-		# Create a buffer which the library will output to
-		self.buffer_size = width*height*self.bitsperpixel/8
-		self.buffer 	 = c_buffer(self.buffer_size)
+		print "MNG processheader", width, height
+		if hasattr(self, 'initalized') and not self.initalized:
+			self.initalized = True
+	
+			# Create a buffer which the library will output to
+			self.buffer_size = width*height*self.bitsperpixel/8
+			self.buffer 	 = c_buffer(self.buffer_size)
 
 		# Set the output style of the library
 		mng.mng_set_canvasstyle(self.mng_handle, self.output)
