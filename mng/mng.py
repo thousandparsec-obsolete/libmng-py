@@ -4,39 +4,50 @@
 
 from ctypes.util import find_library
 from ctypes import *
-# 
-libc = cdll.LoadLibrary(find_library("c"))
-libc.calloc.restype = c_void_p
-libc.calloc.argtypes = [c_int, c_int]
-libc.fread.restype = c_uint32
-libc.fread.argtypes = [c_void_p, c_uint32, c_uint32, c_void_p]
-
 pythonapi.PyFile_AsFile.restype = c_void_p
-
-from constants import *
 
 import sys
 if sys.platform == 'win32':
+	# Find a libc like library
+	libc = cdll.msvcrt
+
 	# Look in the dll directory
 	import os.path
 	lib = os.path.join(os.dirname(__file__), "dll", "libmng.dll")
 else:
+	libc = cdll.LoadLibrary(find_library("c"))
 	lib = find_library("mng")
 
 if lib is None:
 	raise RuntimeError("Was not able to find a libmng library which I can use.")
 
+# Setup the libc
+libc.calloc.restype = c_void_p
+libc.calloc.argtypes = [c_int, c_int]
+libc.fread.restype = c_uint32
+libc.fread.argtypes = [c_void_p, c_uint32, c_uint32, c_void_p]
+
+from constants import *
 mng = cdll.LoadLibrary(lib)
 mng.mng_initialize.restype = c_void_p
 
-#mng_version_text = c_byte.in_dll(mng, "mng_version_text")
-#print mng_version_text, repr(mng_version_text)
-#mng_version_so = c_uint8.in_dll(mng, "mng_version_so")
-#print mng_version_so
-#mng_version_dll = c_uint8.in_dll(mng, "mng_version_dll")
-#print mng_version_dll
-#mng_version_major = c_uint8.in_dll(mng, "mng_version_major")
-#print mng_version_major
+mng.mng_version_text.restype = c_char_p
+mng_version_text	= mng.mng_version_text()
+print mng_version_text
+
+mng.mng_version_so.restype = c_uint8
+mng_version_so		= mng.mng_version_so()
+print mng_version_so
+
+mng.mng_version_dll.restype = c_uint8
+mng_version_dll		= mng.mng_version_dll()
+print mng_version_dll
+
+mng.mng_version_major.restype = c_uint8
+mng.mng_version_minor.restype = c_uint8
+mng.mng_version_release.restype = c_uint8
+mng_version = (mng.mng_version_major(), mng.mng_version_minor(), mng.mng_version_release())
+print mng_version
 
 c_mng_bool   = c_byte
 c_mng_ptr    = c_void_p
@@ -239,6 +250,14 @@ class MNG:
 	def getcanvasline(self, line):
 		return addressof(self.buffer) + (self.width*line*self.bitsperpixel/8)
 
+	def display_resume(self):
+		"""\
+		*Internal Function*
+		
+		Called to update/move to the next frame.
+		"""
+		mng.mng_display_resume(self.mng_handle)
+
 	def nextframe(self, force=False):
 		"""\
 		Gets the next frame.
@@ -247,7 +266,7 @@ class MNG:
 		"""
 		#print self.getticks(), self.delay
 		if self.getticks() > self.delay or force:
-			mng.mng_display_resume(self.mng_handle)
+			self.display_resume()
 		return self.delay, string_at(self.buffer, self.buffer_size)
 
 	def __str__(self):
