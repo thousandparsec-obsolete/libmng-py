@@ -33,3 +33,6 @@
 \.cvsignore$
 (^|/)Thumbs\.db$
 (^|/)temp($|/)
+(^|/).*dist.*($|/)
+(^|/).*build.*($|/)
+(^|/)libmng_py.egg-info($|/)
