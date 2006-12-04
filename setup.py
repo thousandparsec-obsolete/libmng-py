@@ -8,7 +8,7 @@ import os.path
 
 from setuptools import setup
 
-from mng.version import version
+from mng import version
 version = ("%s.%s.%s" % version) 
 print "Version is %s" % version
 
@@ -22,7 +22,7 @@ arguments = dict(
 	author_email= "mithro@mithis.com",
 	url			= "http://www.thousandparsec.net/repos/libmng-py",
 # Files to include
-	scripts=["mngtree.py", "mngdisplay.py"],
+	scripts=["mngtree.py", "mngdisplay.py", "mnginfo.py"],
 	packages=[ \
 		'mng',
 		'mng.pygame',
@@ -36,4 +36,4 @@ arguments = dict(
 if sys.platform == "win32":
 	arguments['data_files'].append((os.path.join("mng", "dll"), "libmng.dll"))
 
-setup(arguments)
+setup(**arguments)
