@@ -19,8 +19,15 @@ table.menu td {
 table.menu a {
 	text-decoration: none;
 }
+
+h5 {
+	padding: 0;
+	margin: 0;
+	margin-top: -0.5em;
+}
 </style>
 <body>
+<a name="top">
 <table style="width: 100%;" border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
@@ -39,13 +46,12 @@ table.menu a {
               <tbody>
                 <tr>
                   <td><a href="#news">News</a></td>
-                  <td><a href="#goals">Goals</a></td>
+                  <td><a href="#about">About</a></td>
                   <td><a href="#qna">FAQ</a></td>
-                  <td><a href="#status">Status</a></td>
                   <td><a href="#screenshots">Screenshots</a></td>
+                  <td><a href="#download">Download</a></td>
                   <td><a href="#links">Links</a></td>
                   <td><a href="#examples">Examples</a></td>
-                  <td><a href="http://www.thousandparsec.net/repos/libmng-py/binaries/">Download</a></td>
                 </tr>
               </tbody>
             </table>
@@ -53,7 +59,21 @@ table.menu a {
           </tr>
         </tbody>
       </table>
-      <h2><a name="about"></a>What is libmng-py?</h2>
+
+<h2><a name="news"></a>News</h2>
+<h3>Website Setup</h3>
+<h5>Monday 4th December 2006</h5>
+<p>
+I've been working on libmng-py for a month or so now. It was my first ctypes
+wrapper so it's been a cool experiance. I've now finally setup a webpage and
+will do an inital public release in the next couple of days.
+</p>
+<a href="#top">[top]</a>
+<br>
+<br>
+
+
+<h2><a name="about"></a>What is libmng-py?</h2>
 <p>
 libmng-py is a Python wrapper around the libmng C library. It currently supports
 the most important parts of the library and supports displaying and usage with
@@ -63,24 +83,86 @@ I started it because I need an animation format with full alpha channel
 support (as appose to GIF which only has a alpha mask) and no other
 python library supported MNG.
 </p>
-<br>
-
-      <h2><a name="goals"></a>Goals</h2>
+<h3>Goals</h3>
 <p>
-<ul>
- <li>full support for all libmng functionality</li>
- <li>out of the box support for popular toolkits</li>
-</ul>
+ <ul>
+  <li>full support for all libmng functionality</li>
+  <li>out of the box support for popular toolkits</li>
+ </ul>
 </p>
+<h3>Status</h3>
+<p>
+Currently supports:
+ <ul>
+  <li>Raw output in any format libmng supports</li>
+  <li><a href="http://www.pygame.org">pygame</a> (SDL) output (detects the best format for fast blitting)</li>
+  <li><a href="http://www.wxPython.org">wxPython</a> animation control (like GIFAnimationCtrl)</li>
+ </ul>
+</p>
+<a href="#top">[top]</a>
+<br>
+<br>
+      
+<h2><a name="download"></a>Download</h2>
+<p>
+You can download the latest development version from the source code 
+repository. To do this you will need to get 
+<a href="http://darcs.net/">DARCS</a>. Then just run the following commands.
+<pre>
+	darcs get --partial http://darcs.thousandparsec.net/repos/libmng-py
+</pre>
+</p><br><p>
+You can also download the latest release packages from the following
+<a href="http://www.thousandparsec.net/repos/libmng-py/doc/binaries/">location.</a
+</p>
+<a href="#top">[top]</a>
+<br>
 <br>
 
-      <h2><a name="qna"></a>Frequently Asked Questions</h2>
-      <h3>Why python?</h3>
+<h2><a name="qna"></a>Frequently Asked Questions</h2>
+<h3>What is python?</h3>
 <p>
 Python is cross-platform and object-oriented. It's easy-to-learn,
 easy-to-use, easy-to-read, easy-to-extend. It is also very important
 that python is increasingly popular.
 </p>
+<h3>What is MNG?</h3>
+<p>
+MNG (pronounced "ming") is an animated version of the PNG format. Originally
+designed to replace the GIF format web adoption never really gained traction. 
+</p><p>
+libmng-py should have full support for all mng features that libmng supports.
+</p>
+<h3>What is JNG?</h3>
+<p>
+JNG is a similar format to MNG but uses JPEG as it's base format.
+</p><p>
+If libmng you are using was compiled with JPEG support then libmng-py should
+also support JNGs.
+</p>
+<h3>Why not used GIF?</h3>
+<p>
+GIF only has support for limited alpha, a pixel is either transparent or not.
+MNG has support for a proper alpha channel like PNG. This means that you can have
+nice blended edges and similar. GIF animations converted into MNG also are about 
+20% smaller!
+</p>
+<h3>Why not use a bunch of PNGs?</h3>
+<p>
+By using a bunch of PNGs means you have increased size. The MNG will be much 
+smaller because the bits of the pictures which are repeated in each frame will
+not be replicated.
+</p><p>
+A bunch of PNGs also does not have anyway to have loops,variable delays or similar.
+</p>
+<h3>Why not use a bunch of MPEG?</h3>
+<p>
+If you want video then MPEG and related video standards are much better for you.
+However these formats are not suited to graphics used in games which often need
+proper alpha channels so they can be blended. 
+</p>
+<a href="#top">[top]</a>
+<br>
 <br>
 
       <h2><a name="links"></a>Related Links</h2>
@@ -93,6 +175,10 @@ that python is increasingly popular.
           <tr>
             <td>libmng library</td>
             <td><a href="http://www.libmng.com/">http://www.libmng.com/</a></td>
+          </tr>
+          <tr>
+            <td>Thousand Parsec (reason I started this wrapper)</td>
+            <td><a href="http://www.thousandparsec.net/">http://www.thousandparsec.net/</a></td>
           </tr>
         </tbody>
       </table>
