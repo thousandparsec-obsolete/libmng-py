@@ -33,21 +33,17 @@ mng.mng_initialize.restype = c_void_p
 
 mng.mng_version_text.restype = c_char_p
 mng_version_text	= mng.mng_version_text()
-print mng_version_text
 
 mng.mng_version_so.restype = c_uint8
 mng_version_so		= mng.mng_version_so()
-print mng_version_so
 
 mng.mng_version_dll.restype = c_uint8
 mng_version_dll		= mng.mng_version_dll()
-print mng_version_dll
 
 mng.mng_version_major.restype = c_uint8
 mng.mng_version_minor.restype = c_uint8
 mng.mng_version_release.restype = c_uint8
 mng_version = (mng.mng_version_major(), mng.mng_version_minor(), mng.mng_version_release())
-print mng_version
 
 c_mng_bool   = c_byte
 c_mng_ptr    = c_void_p
@@ -227,8 +223,8 @@ class MNG:
 		Should create a buffer to store the image data in.
 		Should call mng.mng_set_canvasstyle(self.mng_handle, self.output)
 		"""
-		print "MNG processheader", width, height
-		if hasattr(self, 'initalized') and not self.initalized:
+		#print "MNG processheader", width, height
+		if not hasattr(self, 'initalized') or not self.initalized:
 			self.initalized = True
 	
 			# Create a buffer which the library will output to
