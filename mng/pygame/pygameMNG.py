@@ -97,6 +97,7 @@ class MNG(OriginalMNG):
 		OriginalMNG.__init__(self, file, format)
 
 	def getcanvasline(self, line):
+		self.image.fill((0,0,0,0), (0, line, self.width, 1))
 		p = self.buffer + (self.width*line*self.bitsperpixel/8)
 		return p
 
@@ -114,8 +115,6 @@ class MNG(OriginalMNG):
 
 	def nextframe(self, force=False):
 		if self.getticks() > self.delay or force:
-			# FIXME: Would memset be faster?
-			self.image.fill((0,0,0,0)) 
 			self.display_resume()
 		return self.delay, self.image
 
