@@ -124,6 +124,16 @@ def py_mnggetcanvasline(handle, line):
 	return buffer
 mnggetcanvasline=MNGGETCANVASLINE(py_mnggetcanvasline)
 
+
+MNGGETALPHALINE = CFUNCTYPE(c_mng_ptr, c_mng_handle, c_uint32)
+def py_mnggetalphaline(handle, line):
+	#print "mnggetalphaline", line
+	data = cast(mng.mng_get_userdata(handle), py_object).value
+
+	buffer = data.getalphaline(line)
+	return buffer
+mnggetalphaline=MNGGETALPHALINE(py_mnggetalphaline)
+
 MNGREFRESH = CFUNCTYPE(c_mng_bool, c_mng_handle, c_uint32, c_uint32, c_uint32, c_uint32)
 def py_mngrefresh(handle, x, y, w, h):
 	#print "mngrefresh", x, y, w, h
@@ -175,8 +185,11 @@ class MNG:
 		if mng.mng_setcb_getcanvasline(mng_handle, mnggetcanvasline) != 0:
 			raise RuntimeError("Unable to setup getcanvasline callback for the MNG Library")
 
+		# Called to find the canvas location
+		if mng.mng_setcb_getalphaline(mng_handle, mnggetalphaline) != 0:
+			raise RuntimeError("Unable to setup getalphaline callback for the MNG Library")
+
 		# Called to find the location for a background
-		#getbkgdline
 
 		# Called to tell the system where the library has updated the canvas 
 		if mng.mng_setcb_refresh(mng_handle, mngrefresh) != 0:
@@ -197,6 +210,23 @@ class MNG:
 	def bitsperpixel(self):
 		return BITSPERPIXEL[self.output]
 	bitsperpixel = property(bitsperpixel)
+
+	def bitsperpixel_color(self):
+		if isinstance(self.bitsperpixel, (tuple, list)):
+			return self.bitsperpixel[0]
+		else:
+			return self.bitsperpixel
+	bitsperpixel_color = property(bitsperpixel_color)
+
+	def bitsperpixel_alpha(self):
+		return self.bitsperpixel[1]
+	bitsperpixel_alpha = property(bitsperpixel_alpha)
+
+	def bitsperpixel_all(self):
+		if isinstance(self.bitsperpixel, (tuple, list)):
+			return reduce(int.__add__, self.bitsperpixel)
+		return self.bitsperpixel
+	bitsperpixel_all = property(bitsperpixel_all)
 
 	def size(self):
 		"""
@@ -228,7 +258,7 @@ class MNG:
 			self.initalized = True
 	
 			# Create a buffer which the library will output to
-			self.buffer_size = width*height*self.bitsperpixel/8
+			self.buffer_size = width*height*self.bitsperpixel_all/8
 			self.buffer 	 = c_buffer(self.buffer_size)
 
 		# Set the output style of the library
@@ -238,14 +268,21 @@ class MNG:
 		self.delay = self.getticks()+msec
 
 	def refresh(self, pos, size):
-		#print self, "refresh", pos, size
 		pass
 
 	def getticks(self):
 		return int(time.time()*1000-self.time)
 
 	def getcanvasline(self, line):
-		return addressof(self.buffer) + (self.width*line*self.bitsperpixel/8)
+		p = addressof(self.buffer) + (self.width*line*self.bitsperpixel_color/8)
+		libc.memset(p, 0, self.width*self.bitsperpixel_color/8)
+		return p
+
+	def getalphaline(self, line):
+		p = addressof(self.buffer) + (self.width*self.height*self.bitsperpixel_color/8) \
+									  + (self.width*line*self.bitsperpixel_alpha/8)
+		libc.memset(p, 0, self.width*self.bitsperpixel_alpha/8)
+		return p
 
 	def display_resume(self):
 		"""\
@@ -261,7 +298,6 @@ class MNG:
 
 		(<delay>, <frame>)
 		"""
-		#print self.getticks(), self.delay
 		if self.getticks() > self.delay or force:
 			self.display_resume()
 		return self.delay, string_at(self.buffer, self.buffer_size)
