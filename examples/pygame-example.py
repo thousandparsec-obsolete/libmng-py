@@ -17,6 +17,9 @@ def input(events):
 		else: 
 			print event 
 
+a1.play()
+a2.play()
+
 while True: 
 	screen.fill((0,255,0))
 
