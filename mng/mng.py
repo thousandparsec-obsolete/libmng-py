@@ -146,6 +146,10 @@ import time
 
 _marker = []
 class MNG:
+	PLAY    = 0
+	PAUSING = 1
+	PAUSED  = 2
+
 	def __init__(self, file, output=MNG_CANVAS_RGBA8, read=True):
 		"""\
 		MNG(file, output)
@@ -155,6 +159,7 @@ class MNG:
 		"""
 		self.file   = open(file, 'rb')
 		self.output = output
+		self.state  = self.PAUSED
 
 		# Initalise the library
 		mng_handle = c_void_p(mng.mng_initialize(py_object(self), mngalloc, mngfree, None))
@@ -200,9 +205,12 @@ class MNG:
 		if read:
 			self.read()
 
-	def read(self):
-		self.time = time.time()*1000
+	def init(self):
+		self.time = time.time()
 		self.delay = 0
+
+	def read(self):
+		self.init()
 
 		# Read in the data.
 		mng.mng_readdisplay(self.mng_handle)
@@ -271,7 +279,7 @@ class MNG:
 		pass
 
 	def getticks(self):
-		return int(time.time()*1000-self.time)
+		return int((time.time()-self.time)*1000)
 
 	def getcanvasline(self, line):
 		p = addressof(self.buffer) + (self.width*line*self.bitsperpixel_color/8)
@@ -290,33 +298,61 @@ class MNG:
 		
 		Called to update/move to the next frame.
 		"""
-		mng.mng_display_resume(self.mng_handle)
+		if self.state == self.PLAY:
+			mng.mng_display_resume(self.mng_handle)
+		else:
+			self.state = self.PAUSED
+			mng.mng_display_freeze(self.mng_handle)
 
-	def nextframe(self, force=False):
+	def nextframe(self):
 		"""\
 		Gets the next frame.
 
 		(<delay>, <frame>)
 		"""
-		if self.getticks() > self.delay or force:
+		#print "nextframe"
+		if self.getticks() > self.delay:
 			self.display_resume()
-		return self.delay, string_at(self.buffer, self.buffer_size)
+		return self.delay-self.getticks(), string_at(self.buffer, self.buffer_size)
 
 	def __str__(self):
 		return "<MNG %s (%i, %i)>" % (hex(id(self)), self.width, self.height)
 
-	def stop(self):
+	def pause(self):
 		"""\
-		Stops the current animation.
+		Pause the current animation.
 		"""
-		mng.mng_display_freeze(self.mng_handle)
+		if self.state != self.PAUSED:
+			self.state = self.PAUSING
+			
+			while self.getticks() < self.delay:
+				pass
+			self.display_resume()
+
+	def reset(self):
+		"""\
+		Resets the animation to the start.
+		"""
+		if self.state == self.PAUSED:
+#			print "Resetting!"
+			mng.mng_display_reset(self.mng_handle)
+#			mng.mng_display_goframe(self.mng_handle, 0)
+#			mng.mng_display_gotime(self.mng_handle, 0)
+		else:
+			raise IOError("The animation has to be paused before you can stop it.")
 
 	def resume(self):
 		"""\
-		Resumes a stopped animation.
+		Starts an animation (stopped or never started).
 		"""
-		mng.mng_display_resume(self.mng_handle)
-		
+		print "resume"
+		self.state = self.PLAY
+
+		self.init()
+		self.display_resume()
+	play = resume
+	
+	
 
 ## Note that the code could be made a lot more user-friendly by using 
 ## mng_getlasterror to display more details in case libmng reports an error.
