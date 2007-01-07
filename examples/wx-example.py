@@ -54,6 +54,6 @@ class Frame(wx.Frame):
 		self.anim1.Stop()
 		self.anim2.Stop()
 
-f = Frame(a, -1, "Testing")
+f = Frame(a, -1, "wx MNGAnimationCtrl")
 f.Show()
 a.MainLoop()
