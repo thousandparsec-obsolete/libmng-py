@@ -29,7 +29,7 @@ arguments = dict(
 		'mng.wx',
 		'mng.utils',
 	],
-	data_files=[(".",	("LICENSE", "COPYING", "README", "TODO"))],
+	data_files=[(".",	("LICENSE", "README", "TODO"))],
 	zip_safe=False,
 )
 

@@ -3,7 +3,6 @@ TODO Items
  - Support any IO like object.
  - Support for buffer objects.
  - Use python malloc/free instead of the libc ones.
- - Create a wx.MNGAnimationCtrl (based on the GIF one found in tpclient-pywx).
  - Use the find function so works under linux/windows.
  - Add compiled .dll for use under windows.
  - Add distutils support.
