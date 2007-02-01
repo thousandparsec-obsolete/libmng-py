@@ -11,15 +11,14 @@ Tries to displays a mng using a different options.
 	-t wx			Use wx
 """
 
-
-if __name__ == "__main__":
+def main(argv):
 	import sys
 
 	type = None
-	for i in range(0, len(sys.argv)):
-		arg = sys.argv[i]
+	for i in range(0, len(argv)):
+		arg = argv[i]
 		if arg == "-t":
-			type = sys.argv[i+1]
+			type = argv[i+1]
 			break
 
 	while type == None:
@@ -58,7 +57,9 @@ if __name__ == "__main__":
 					print event 
 
 		s = pygame.Surface((1,1)).convert_alpha()
-		a = MNG(sys.argv[-1], s)
+		a = MNG(argv[-1], s)
+		a.play()
+
 		while True: 
 			screen.fill((0,255,0))
 
@@ -67,4 +68,17 @@ if __name__ == "__main__":
 			pygame.display.flip()
 			input(pygame.event.get())
 
+import sys
+if __name__ == "__main__":
+	argv = list(sys.argv)
 
+	if argv[1] == "-p":
+		del argv[1]
+		print "Profile..."
+
+		import hotshot
+		prof = hotshot.Profile("hotshot_stats")
+		prof.runcall(main, argv)
+		prof.close()
+	else:
+		main(argv)

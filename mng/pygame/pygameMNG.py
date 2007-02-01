@@ -96,11 +96,6 @@ class MNG(OriginalMNG):
 		print "Detected image format to be", NAMESPERPIXEL[format], sdlformat
 		OriginalMNG.__init__(self, file, format)
 
-	def getcanvasline(self, line):
-		self.image.fill((0,0,0,0), (0, line, self.width, 1))
-		p = self.buffer + (self.width*line*self.bitsperpixel/8)
-		return p
-
 	def processheader(self, width, height):
 		self.initalized = True
 
