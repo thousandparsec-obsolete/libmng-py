@@ -17,22 +17,28 @@ typedef struct {
 #include <string.h>
 #include <libmng.h>
 
+#define SPEED
+
 mng_ptr* getcanvasline(mng_handle handle, mng_uint32 line) {
 	cmng_data* data = (cmng_data*)mng_get_userdata(handle);
 
+#ifndef SPEED
 	if (data->buffer == NULL) {
 		printf("getcanvasline (C) was called when there was no buffer!\n");
 		return NULL;
 	}
+#endif
 
 	void* p = data->buffer + (data->width*line*data->bytesperpixel);
+#ifndef SPEED
 	if (p-(data->buffer) > data->buffer_size) {
 		printf("getcanvasline (C) had an error, we ran off the bottom of a buffer! (%d  > %d)\n", p-(data->buffer), data->buffer_size);
 		return NULL;
 	}
+#endif
 
 	/* Clear the memory first - FIXME: Figure out why this is needed and explain it */
-//	memset(p, 0, data->width*data->bytesperpixel);
+	memset(p, 0, data->width*data->bytesperpixel);
 	return p;
 }
 
@@ -43,6 +49,7 @@ mng_ptr* getcanvasline(mng_handle handle, mng_uint32 line) {
 mng_ptr* getalphaline(mng_handle handle, mng_uint32 line) {
 	cmng_data* data = (cmng_data*)mng_get_userdata(handle);
 
+#ifndef SPEED
 	if (data->buffer == NULL) {
 		printf("getalphaline (C) was called when there was no buffer!\n");
 		return NULL;
@@ -51,11 +58,12 @@ mng_ptr* getalphaline(mng_handle handle, mng_uint32 line) {
 		printf("getalphaline (C) was called when the bytesperalpha was zero!\n");
 		return NULL;
 	}
+#endif
 
 	void* p = data->buffer + (data->width*data->height*data->bytesperpixel)
 									  + (data->width*line*data->bytesperalpha);
 	// Clear the memory first - FIXME: Figure out why this is needed and explain it
-//	memset(p, 0, data->width*data->bytesperalpha);
+	memset(p, 0, data->width*data->bytesperalpha);
 	return p;
 }
 
