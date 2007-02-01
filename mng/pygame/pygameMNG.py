@@ -101,10 +101,10 @@ class MNG(OriginalMNG):
 
 		# Create a buffer which the library will output to
 		self.image = pygame.surface.Surface((width, height)).convert(self.info.masks)
-		if self.bitsperpixel != self.image.get_bitsize():
+		if self.bytesperpixel*8 != self.image.get_bitsize():
 			raise RuntimeError("Created surface (%s) does not have correct bitsize (%s)." % \
-				(self.image.get_bitsize(), self.bitsperpixel))
-		self.buffer = CPygameSurface(self.image).pixels
+				(self.image.get_bitsize(), self.bytesperpixel*8))
+		self.mnghelper.buffer = CPygameSurface(self.image).pixels
 
 		OriginalMNG.processheader(self, width, height)
 

@@ -22,15 +22,8 @@ else:
 if lib is None:
 	raise RuntimeError("Was not able to find a libmng library which I can use.")
 
-# Setup the libc
-libc.calloc.restype = c_void_p
-libc.calloc.argtypes = [c_int, c_int]
-libc.fread.restype = c_uint32
-libc.fread.argtypes = [c_void_p, c_uint32, c_uint32, c_void_p]
-
 # libmng constants...
 from constants import *
-
 import mnghelper
 
 mng = cdll.LoadLibrary(lib)
@@ -53,7 +46,7 @@ mng_version = (mng.mng_version_major(), mng.mng_version_minor(), mng.mng_version
 import time
 
 _marker = []
-class MNG:
+class MNG(object):
 	PLAY    = 0
 	PAUSING = 1
 	PAUSED  = 2
@@ -65,6 +58,7 @@ class MNG:
 		file   - A file object which can be accessed with the C API (no subclasses or similar)
 		output - 
 		"""
+		print "__init__", file, output, read
 		self.file   = open(file, 'rb')
 		self.output = output
 		self.state  = self.PAUSED
@@ -72,15 +66,15 @@ class MNG:
 		# Initalise the library
 
 		# Allocate the Data Structure store..
-		self.mnghelper
 		self.mnghelper = mnghelper.c_mng_data()
 		self.mnghelper.object = self
 		self.mnghelper.buffer = None
+		self.mnghelper.width, self.mnghelper.height = (0,0)
 		if isinstance(BITSPERPIXEL[output], (tuple, list)):
-			self.mnghelper.bytesperpixel = BITSPERPIXEL[output][0]
-			self.mnghelper.bytesperalpha = BITSPERPIXEL[output][1]
+			self.mnghelper.bytesperpixel = BITSPERPIXEL[output][0]/8
+			self.mnghelper.bytesperalpha = BITSPERPIXEL[output][1]/8
 		else:
-			self.mnghelper.bytesperpixel = BITSPERPIXEL[output]
+			self.mnghelper.bytesperpixel = BITSPERPIXEL[output]/8
 			self.mnghelper.bytesperalpha = 0
 
 		mng_handle = c_void_p(mng.mng_initialize(byref(self.mnghelper), mnghelper.mngalloc, mnghelper.mngfree, None))
@@ -118,7 +112,11 @@ class MNG:
 		# Called to find the location for a background
 
 		# Called to tell the system where the library has updated the canvas 
-		if mng.mng_setcb_refresh(mng_handle, mnghelper.mngrefresh) != 0:
+		if hasattr(self, "refresh"):
+			refresh = mnghelper.mngrefresh
+		else:
+			refresh = mnghelper.mngrefresh_dummy
+		if mng.mng_setcb_refresh(mng_handle, refresh) != 0:
 			raise RuntimeError("Unable to setup refresh callback for the MNG Library")
 
 		self.mng_handle = mng_handle
@@ -138,21 +136,22 @@ class MNG:
 
 	def bytesperpixel(self):
 		return self.mnghelper.bytesperpixel
-	bitsperpixel = property(bitsperpixel)
+	bytesperpixel = property(bytesperpixel)
 
 	def bytesperalpha(self):
 		return self.mnghelper.bytesperalpha
-	bitsperalpha = property(bitsperalpha)
+	bytesperalpha = property(bytesperalpha)
 
 	def bytesperboth(self):
 		return self.bytesperpixel+self.bytesperalpha
-	bitsperboth = property(bitsperboth)
+	bytesperboth = property(bytesperboth)
 
-	def bitsperpixel_all(self):
-		if isinstance(self.bitsperpixel, (tuple, list)):
-			return reduce(int.__add__, self.bitsperpixel)
-		return self.bitsperpixel
-	bitsperpixel_all = property(bitsperpixel_all)
+	def get_width(self):
+		return self.mnghelper.width
+	width = property(get_width)
+	def get_height(self):
+		return self.mnghelper.height
+	hieght = property(get_height)
 
 	def size(self):
 		"""
@@ -168,8 +167,7 @@ class MNG:
 		f = "mng_get_image" + key
 		if hasattr(mng, f):
 			return getattr(mng, f)(self.mng_handle)
-		if default is _marker:
-			raise KeyError("No such key %s" % key)
+		raise KeyError("No such key %s" % key)
 
 	def processheader(self, width, height):
 		"""\
@@ -180,23 +178,30 @@ class MNG:
 		Should call mng.mng_set_canvasstyle(self.mng_handle, self.output)
 		"""
 		print "MNG processheader", width, height
-		self.mnghelper = self.bitsper
 
+		self.mnghelper.width  = width
+		self.mnghelper.height = height
+		self.mnghelper.buffer_size = width*height*self.bytesperboth
 		if not hasattr(self, 'initalized') or not self.initalized:
 			self.initalized = True
 	
 			# Create a buffer which the library will output to
-			self.buffer_size = width*height*self.bytesperboth
-			self.buffer 	 = c_buffer(self.buffer_size)
+			self.buffer 	      = c_buffer(self.buffer_size)
+			self.mnghelper.buffer = addressof(self._buffer)
+
+		print self.mnghelper
+		print id(self), id(self.mnghelper.object)
+		print self.mnghelper.buffer
+		print self.mnghelper.buffer_size
+		print (self.mnghelper.width, self.mnghelper.height)
+		print self.mnghelper.bytesperpixel
+		print self.mnghelper.bytesperalpha
 
 		# Set the output style of the library
 		mng.mng_set_canvasstyle(self.mng_handle, self.output)
 
 	def settimer(self, msec):
 		self.delay = self.getticks()+msec
-
-	def refresh(self, pos, size):
-		pass
 
 	def getticks(self):
 		return int((time.time()-self.time)*1000)
